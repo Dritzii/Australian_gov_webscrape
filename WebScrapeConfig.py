@@ -31,12 +31,10 @@ class Config:
                 teaser_info = html.find_all('div', {'class': 'teaser__info'})
                 teaser_summary = html.find_all('div', {'class': 'teaser__summary'})
                 teaser_tags = html.find_all('span', {'class': 'file file--mime-application-msword file--x-office-document'})
-                href = html.select('.file file--mime-application-msword file--x-office-document a')
                 dates = [i.get_text().replace('\n', '') for i in teaser_info]
                 summary = [i.get_text().replace('\n', '') for i in teaser_summary]
-                tags = [i.get_text().replace('\n', '') for i in teaser_tags]
-                hrefdata = [i['href'] for i in href]
-                print(hrefdata)
+                links = [i for i in teaser_tags]
+                print(links)
 
     def get_audits(self):
         page = 0
