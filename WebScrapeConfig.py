@@ -6,7 +6,8 @@ import os
 
 class Config:
     def __init__(self):
-        self.baseurl = 'https://www.agedcarequality.gov.au/reports'  # https://www.agedcarequality.gov.au/reports?name=&racs_id=&suburb&state=All&prov_name=&service_type=All&previous_names=&postcode=&page=0
+        self.baseurl = 'https://www.agedcarequality.gov.au/reports'
+        self.eachurl = 'https://www.agedcarequality.gov.au'
         self.session = requests.session()
         self.path = os.path.dirname(os.path.abspath(
             __file__)) + '/homes_audit_data.csv'
@@ -17,6 +18,25 @@ class Config:
             writer.writerow(
                 ['homenames', 'home_previous', 'previous', 'racsid', 'service', 'suburbs', 'states', 'post_code',
                  'hrefdata'])
+
+    def get_each_home(self):
+        with open(self.path, 'r', newline='') as nfile:
+            reader = csv.reader(nfile)
+            next(reader)
+            for each in reader:
+                endpoint = each[8]
+                data = self.session.get(
+                    self.eachurl + endpoint)
+                html = bs4.BeautifulSoup(data.content, 'html.parser')
+                teaser_info = html.find_all('div', {'class': 'teaser__info'})
+                teaser_summary = html.find_all('div', {'class': 'teaser__summary'})
+                teaser_tags = html.find_all('span', {'class': 'file file--mime-application-msword file--x-office-document'})
+                href = html.select('.file file--mime-application-msword file--x-office-document a')
+                dates = [i.get_text().replace('\n', '') for i in teaser_info]
+                summary = [i.get_text().replace('\n', '') for i in teaser_summary]
+                tags = [i.get_text().replace('\n', '') for i in teaser_tags]
+                hrefdata = [i['href'] for i in href]
+                print(hrefdata)
 
     def get_audits(self):
         page = 0
@@ -58,10 +78,10 @@ class Config:
                                      each['previous'],
                                      each['racsid'],
                                      each['service'],
-                                    each['suburbs'],
-                                    each['states'],
-                                    each['post_code'],
-                                    each['hrefdata']])
+                                     each['suburbs'],
+                                     each['states'],
+                                     each['post_code'],
+                                     each['hrefdata']])
                     print('writing row')
                 if len(clist) == 0:
                     break
