@@ -11,6 +11,8 @@ class Config:
         self.session = requests.session()
         self.path = os.path.dirname(os.path.abspath(
             __file__)) + '/homes_audit_data.csv'
+        self.path_2 = os.path.dirname(os.path.abspath(
+            __file__)) + '/homes_audit_data_v2.csv'
 
     def make_file(self):
         with open(self.path, 'w', newline='') as path:
@@ -19,22 +21,50 @@ class Config:
                 ['homenames', 'home_previous', 'previous', 'racsid', 'service', 'suburbs', 'states', 'post_code',
                  'hrefdata'])
 
+    def make_file_v2(self):
+        with open(self.path_2, 'w', newline='') as path:
+            writer = csv.writer(path)
+            writer.writerow(
+                ['homenames', 'dates', 'summary', 'links'])
+
+    def get_each_file(self):
+        with open(self.path_2, 'r', newline='') as rfile:
+            reader = csv.reader(rfile)
+            next(reader)
+            for each in reader:
+                endpoint = each[3]
+                data = self.session.get(
+                    'https://www.agedcarequality.gov.au' + '/sites/default/files/legacy-files/aacqa/files/11/mnt/www-aacqa/publications/reports/mingarrahostel3235-7.doc')
+                print(data)
+
     def get_each_home(self):
-        with open(self.path, 'r', newline='') as nfile:
+        with open(self.path, 'r', newline='') as nfile, open(self.path_2, 'w', newline='') as writefile:
+            writer = csv.writer(writefile)
             reader = csv.reader(nfile)
             next(reader)
             for each in reader:
+                home_name = each[0]
                 endpoint = each[8]
                 data = self.session.get(
                     self.eachurl + endpoint)
                 html = bs4.BeautifulSoup(data.content, 'html.parser')
                 teaser_info = html.find_all('div', {'class': 'teaser__info'})
                 teaser_summary = html.find_all('div', {'class': 'teaser__summary'})
-                teaser_tags = html.find_all('span', {'class': 'file file--mime-application-msword file--x-office-document'})
+                href = html.select('.field__items a')
                 dates = [i.get_text().replace('\n', '') for i in teaser_info]
                 summary = [i.get_text().replace('\n', '') for i in teaser_summary]
-                links = [i for i in teaser_tags]
-                print(links)
+                links = [i['href'].replace('https://www.agedcarequality.gov.au', '') for i in href]
+                clist = [
+                    {'dates': j, 'summary': k, 'links': l}
+                    for j, k, l in
+                    zip(dates, summary, links)]
+                for lis in clist:
+                    writer.writerow([home_name,
+                                     lis['dates'],
+                                     lis['summary'],
+                                     lis['links']])
+                    print('writing row')
+                    print(home_name)
 
     def get_audits(self):
         page = 0
