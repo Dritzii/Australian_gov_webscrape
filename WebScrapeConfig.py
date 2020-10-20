@@ -1,7 +1,13 @@
+from io import BytesIO
+
 import bs4
 import requests
 import csv
 import os
+import re
+
+
+# from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 
 class Config:
@@ -33,9 +39,14 @@ class Config:
             next(reader)
             for each in reader:
                 endpoint = each[3]
+                endpoint_file = re.compile('[a-zA-Z-0-9-]+.doc|[a-zA-Z-0-9-]+.pdf|[a-zA-Z0-9-]+.doc|[a-zA-Z0-9-]+.pdf')
+                files = endpoint_file.findall(endpoint).pop()
                 data = self.session.get(
-                    'https://www.agedcarequality.gov.au' + '/sites/default/files/legacy-files/aacqa/files/11/mnt/www-aacqa/publications/reports/mingarrahostel3235-7.doc')
-                print(data)
+                    'https://www.agedcarequality.gov.au' + endpoint)
+                with open('files/{}'.format(str(files)), 'wb') as newsfile:
+                    newsfile.write(data.content)
+                    print("writing file")
+                    print(files)
 
     def get_each_home(self):
         with open(self.path, 'r', newline='') as nfile, open(self.path_2, 'w', newline='') as writefile:
