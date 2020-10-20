@@ -40,7 +40,10 @@ class Config:
             for each in reader:
                 endpoint = each[3]
                 endpoint_file = re.compile('[a-zA-Z-0-9-]+.doc|[a-zA-Z-0-9-]+.pdf|[a-zA-Z0-9-]+.doc|[a-zA-Z0-9-]+.pdf')
-                files = endpoint_file.findall(endpoint).pop()
+                try:
+                    files = endpoint_file.findall(endpoint).pop()
+                except IndexError:
+                    pass
                 data = self.session.get(
                     'https://www.agedcarequality.gov.au' + endpoint)
                 with open('files/{}'.format(str(files)), 'wb') as newsfile:
