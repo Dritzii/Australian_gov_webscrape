@@ -1,10 +1,9 @@
-from io import BytesIO
-
 import bs4
 import requests
 import csv
 import os
 import re
+
 
 # from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
@@ -27,8 +26,8 @@ class Config:
                  'hrefdata'])
 
     def make_file_v2(self):
-        with open(self.path_2, 'w', newline='') as path:
-            writer = csv.writer(path)
+        with open(self.path_2, 'w', newline='') as npath:
+            writer = csv.writer(npath)
             writer.writerow(
                 ['homenames', 'dates', 'summary', 'links'])
 
@@ -47,7 +46,8 @@ class Config:
                     pass
                 data = self.session.get(
                     'https://www.agedcarequality.gov.au' + endpoint)
-                with open('files/{}'.format(str(name)) + '_{}'.format(str(date)) + '_{}'.format(str(files)), 'wb') as newsfile:
+                with open('files/{}'.format(str(name)) + '_{}'.format(str(date)) + '_{}'.format(str(files)),
+                          'wb') as newsfile:
                     newsfile.write(data.content)
                     print("writing file")
                     print(files)
@@ -81,11 +81,21 @@ class Config:
                     print('writing row')
                     print(home_name)
 
+    def get_fraction_audit(self):
+        with open(self.path_2, 'r', newline='') as rfile:
+            reader = csv.reader(rfile)
+            audit_fraction = re.compile('[0-9]+.of.the.[0-9]+')
+            for each in reader:
+                home_name = each[0]
+                date = each[1]
+                audit = audit_fraction.findall(each[2]).pop()
+                print(audit)
+
     def get_audits(self):
         page = 0
         with open(self.path, 'a', newline='') as nfile:
             writer = csv.writer(nfile)
-            while not page:
+            while True:
                 data = self.session.get(
                     self.baseurl + '?name=&racs_id=&suburb&state=All&prov_name=&service_type=All&previous_names=&postcode=&page={}'.format(
                         str(page)))
