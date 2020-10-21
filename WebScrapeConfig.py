@@ -6,7 +6,6 @@ import csv
 import os
 import re
 
-
 # from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 
@@ -38,6 +37,8 @@ class Config:
             reader = csv.reader(rfile)
             next(reader)
             for each in reader:
+                name = each[0].replace(' ', '_').replace(',', '').replace('/', '')
+                date = each[1].replace(' ', '_').replace(',', '').replace('/', '')
                 endpoint = each[3]
                 endpoint_file = re.compile('[a-zA-Z-0-9-]+.doc|[a-zA-Z-0-9-]+.pdf|[a-zA-Z0-9-]+.doc|[a-zA-Z0-9-]+.pdf')
                 try:
@@ -46,7 +47,7 @@ class Config:
                     pass
                 data = self.session.get(
                     'https://www.agedcarequality.gov.au' + endpoint)
-                with open('files/{}'.format(str(files)), 'wb') as newsfile:
+                with open('files/{}'.format(str(name)) + '_{}'.format(str(date)) + '_{}'.format(str(files)), 'wb') as newsfile:
                     newsfile.write(data.content)
                     print("writing file")
                     print(files)
