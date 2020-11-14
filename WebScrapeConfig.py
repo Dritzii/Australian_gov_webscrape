@@ -17,6 +17,8 @@ class Config:
             __file__)) + '/homes_audit_data.csv'
         self.path_2 = os.path.dirname(os.path.abspath(
             __file__)) + '/homes_audit_data_v2.csv'
+        self.path_3 = os.path.dirname(os.path.abspath(
+            __file__)) + '/homes_audit_data_v3.csv'
 
     def make_file(self):
         with open(self.path, 'w', newline='') as path:
@@ -82,14 +84,19 @@ class Config:
                     print(home_name)
 
     def get_fraction_audit(self):
-        with open(self.path_2, 'r', newline='') as rfile:
+        with open(self.path_2, 'r', newline='') as rfile, open(self.path_3, 'w', newline='') as nfile:
             reader = csv.reader(rfile)
+            writer = csv.writer(nfile)
             audit_fraction = re.compile('[0-9]+.of.the.[0-9]+')
             for each in reader:
                 home_name = each[0]
                 date = each[1]
-                audit = audit_fraction.findall(each[2]).pop()
-                print(audit)
+                try:
+                    audit = audit_fraction.findall(each[2]).pop()
+                    print(audit)
+                except IndexError:
+                    pass
+                writer.writerow([home_name, date, audit])
 
     def get_audits(self):
         page = 0
